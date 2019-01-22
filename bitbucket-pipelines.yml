@@ -1,0 +1,35 @@
+# This is a sample build configuration for Docker.
+# Check our guides at https://confluence.atlassian.com/x/O1toN for more examples.
+# Only use spaces to indent your .yml configuration.
+# -----
+# You can specify a custom docker image from Docker Hub as your build environment.
+image: atlassian/default-image:2
+pipelines:
+  default: #this will run for all branches unless specificed otherwise
+    - step:
+        script:
+          #Assign variables
+          - export CLIURL=https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz  
+          - export SFDX_AUTOUPDATE_DISABLE=false
+          - export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
+          - export SFDX_DOMAIN_RETRY=300
+          - export SFDX_DISABLE_APP_HUB=true
+          - export SFDX_LOG_LEVEL=DEBUG
+          - export DEPLOYDIR=src
+          - export TESTLEVEL=RunLocalTests
+          #Create SFDX directory
+          - mkdir sfdx
+          #Install SFDX
+          - wget -qO- $CLIURL | tar xJ -C sfdx --strip-components 1
+          - "./sfdx/install"
+          - export PATH=./sfdx/$(pwd):$PATH
+          - sfdx --version
+          - sfdx plugins --core
+          #Decrypt server key
+          - openssl enc -nosalt -aes-256-cbc -d -in assets/server.key.enc -out assets/server.key -base64 -K $DECRYPTION_KEY -iv $DECRYPTION_IV
+          #Authorize Target Org
+          - sfdx force:auth:jwt:grant --instanceurl https://test.salesforce.com  --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key --username $USER_NAME --setalias UAT
+          #Deploy to Target Deployment Org and Run Unit Tests
+          - sfdx force:mdapi:deploy --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
+          #Example shows how to run a check only deploy.
+          #- sfdx force:mdapi:deploy --checkonly --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
