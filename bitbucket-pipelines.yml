@@ -19,7 +19,7 @@ pipelines:
           - export TESTLEVEL=RunLocalTests
           #Create SFDX directory
           - mkdir sfdx
-          #Install SFDX
+          #Install Salesforce CLI
           - wget -qO- $CLIURL | tar xJ -C sfdx --strip-components 1
           - "./sfdx/install"
           - export PATH=./sfdx/$(pwd):$PATH
@@ -27,9 +27,9 @@ pipelines:
           - sfdx plugins --core
           #Decrypt server key
           - openssl enc -nosalt -aes-256-cbc -d -in assets/server.key.enc -out assets/server.key -base64 -K $DECRYPTION_KEY -iv $DECRYPTION_IV
-          #Authorize Target Org
+          #Authorize target org
           - sfdx force:auth:jwt:grant --instanceurl https://test.salesforce.com  --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key --username $USER_NAME --setalias UAT
-          #Deploy to Target Deployment Org and Run Unit Tests
+          #Deploy to target deployment org and run unit tests
           - sfdx force:mdapi:deploy --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
           #Example shows how to run a check only deploy.
           #- sfdx force:mdapi:deploy --checkonly --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
