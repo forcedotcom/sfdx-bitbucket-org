@@ -1,11 +1,11 @@
-# This is a sample build configuration for Docker.
-# Check our guides at https://confluence.atlassian.com/x/O1toN for more examples.
+# This file is a sample build configuration for Docker.
+# See the guides at https://confluence.atlassian.com/x/O1toN for more examples.
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
 image: atlassian/default-image:2
 pipelines:
-  default: #this will run for all branches unless specificed otherwise
+  default: #These commands run for all branches unless specified otherwise
     - step:
         script:
           #Assign variables
@@ -17,7 +17,7 @@ pipelines:
           - export SFDX_LOG_LEVEL=DEBUG
           - export DEPLOYDIR=src
           - export TESTLEVEL=RunLocalTests
-          #Create SFDX directory
+          #Create sfdx directory
           - mkdir sfdx
           #Install Salesforce CLI
           - wget -qO- $CLIURL | tar xJ -C sfdx --strip-components 1
@@ -31,5 +31,5 @@ pipelines:
           - sfdx force:auth:jwt:grant --instanceurl https://test.salesforce.com  --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key --username $USER_NAME --setalias UAT
           #Deploy to target deployment org and run unit tests
           - sfdx force:mdapi:deploy --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
-          #Example shows how to run a check only deploy.
+          #Example shows how to run a check-only deploy.
           #- sfdx force:mdapi:deploy --checkonly --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
