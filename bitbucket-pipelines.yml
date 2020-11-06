@@ -14,16 +14,17 @@ pipelines:
         script:
           #Assign variables
           - export MDAPI_DEPLOYDIR=src
+          - export SFDX_DEPLOYDIR=force-app/main/default
           - export INSTANCEURL=https://test.salesforce.com
           - export ALIAS=qa
           - export TESTLEVEL=RunLocalTests
           #Decrypt server key
           - openssl enc -nosalt -aes-256-cbc -d -in assets/server.key.enc -out assets/server.key -base64 -K $DECRYPTION_KEY -iv $DECRYPTION_IV
           #Authorize target org
-          - sfdx force:auth:jwt:grant --instanceurl https://test.salesforce.com  --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key --username $USER_NAME --setalias UAT
+          - sfdx force:auth:jwt:grant --instanceurl https://test.salesforce.com  --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key --username $USER_NAME --setalias $ALIAS
           #Deploy to target deployment org (using Metadata API) and run unit tests
-          - sfdx force:mdapi:deploy --wait 10 --deploydir $MDAPI_DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
+          - sfdx force:mdapi:deploy --wait 10 --deploydir $MDAPI_DEPLOYDIR --targetusername $ALIAS --testlevel $TESTLEVEL
           #Deploy to target deployment org (using SFDX) and run unit tests
-          #- sfdx force:source:deploy --targetusername $ALIAS --sourcepath force-app/main/default --ignoreerrors --ignorewarnings --testlevel $TESTLEVEL --loglevel fatal
+          #- sfdx force:source:deploy --targetusername $ALIAS --sourcepath $SFDX_DEPLOYDIR --ignoreerrors --ignorewarnings --testlevel $TESTLEVEL --loglevel fatal
           #Example shows how to run a check-only deploy.
           #- sfdx force:mdapi:deploy --checkonly --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
