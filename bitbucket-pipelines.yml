@@ -3,33 +3,28 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: atlassian/default-image:2
+image: salesforce/salesforcedx
 pipelines:
   default: #These commands run for all branches unless specified otherwise
     - step:
+        services:
+          - docker
+        caches:
+          - docker
         script:
           #Assign variables
-          - export CLIURL=https://developer.salesforce.com/media/salesforce-cli/sfdx-linux-amd64.tar.xz  
-          - export SFDX_AUTOUPDATE_DISABLE=false
-          - export SFDX_USE_GENERIC_UNIX_KEYCHAIN=true
-          - export SFDX_DOMAIN_RETRY=300
-          - export SFDX_DISABLE_APP_HUB=true
-          - export SFDX_LOG_LEVEL=DEBUG
-          - export DEPLOYDIR=src
+          - export MDAPI_DEPLOYDIR=src
+          - export SFDX_DEPLOYDIR=force-app/main/default
+          - export INSTANCEURL=https://test.salesforce.com
+          - export ALIAS=qa
           - export TESTLEVEL=RunLocalTests
-          #Create sfdx directory
-          - mkdir sfdx
-          #Install Salesforce CLI
-          - wget -qO- $CLIURL | tar xJ -C sfdx --strip-components 1
-          - "./sfdx/install"
-          - export PATH=./sfdx/$(pwd):$PATH
-          - sfdx --version
-          - sfdx plugins --core
           #Decrypt server key
           - openssl enc -nosalt -aes-256-cbc -d -in assets/server.key.enc -out assets/server.key -base64 -K $DECRYPTION_KEY -iv $DECRYPTION_IV
           #Authorize target org
-          - sfdx force:auth:jwt:grant --instanceurl https://test.salesforce.com  --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key --username $USER_NAME --setalias UAT
-          #Deploy to target deployment org and run unit tests
-          - sfdx force:mdapi:deploy --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
+          - sfdx force:auth:jwt:grant --instanceurl https://test.salesforce.com  --clientid $CONSUMER_KEY --jwtkeyfile assets/server.key --username $USER_NAME --setalias $ALIAS
+          #Deploy to target deployment org (using Metadata API) and run unit tests
+          - sfdx force:mdapi:deploy --wait 10 --deploydir $MDAPI_DEPLOYDIR --targetusername $ALIAS --testlevel $TESTLEVEL
+          #Deploy to target deployment org (using SFDX) and run unit tests
+          #- sfdx force:source:deploy --targetusername $ALIAS --sourcepath $SFDX_DEPLOYDIR --ignoreerrors --ignorewarnings --testlevel $TESTLEVEL --loglevel fatal
           #Example shows how to run a check-only deploy.
           #- sfdx force:mdapi:deploy --checkonly --wait 10 --deploydir $DEPLOYDIR --targetusername UAT --testlevel $TESTLEVEL
