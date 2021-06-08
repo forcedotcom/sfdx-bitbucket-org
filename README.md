@@ -48,13 +48,28 @@ openssl enc -nosalt -aes-256-cbc -in your_key_location/server.key -out assets/se
 
 9) Store the `key` and `iv` values used above in Bitbucket Pipeplines environment variables named `DECRYPTION_KEY` and `DECRYPTION_IV`, respectively. When finished setting environment variables, the environment variables setup screen should look like the one below.
 
+10) Store the login URL of the instance the org lives on in a Bitbucket Pipeplines environment variable named `ENDPOINT` using the Bitbucket Pipeplines UI.
+
 ![alt text](assets/images/variables.png)
 
-10) Commit the updated `server.key.enc` file.
+11) Commit the updated `server.key.enc` file.
 
 Now you're ready to go! When you commit and push a change, your change kicks off a Bitbucket Pipelines build.
 
 Enjoy!
+
+## Environment Variables
+
+| Env Var                       | Description                                                                                                     |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| CONSUMER_KEY                  | From your JWT-based connected app on Salesforce, retrieve the generated `Consumer Key` from your Dev Hub org.   |
+| USER_NAME                     | This username is the username that you use to access your Dev Hub.                                              |
+| ENDPOINT                      | the login URL of the instance the org lives on.                                                                 |
+| DECRYPTION_KEY                | `server.key` encryption key.                                                                                    |
+| DECRYPTION_IV                 | `server.key` encryption initialization Vector.                                                                  |
+| DX_CLI_URL_CUSTOM             | By default, the script installs the current version of Salesforce CLI. To install the release candidate, set the `DX_CLI_URL_CUSTOM` local variable to the appropriate URL.|
+
+
 
 ## Contributing to the Repository ###
 
